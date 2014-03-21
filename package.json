@@ -1,0 +1,17 @@
+{
+  "name": "subtitles-downloader",
+  "version": "0.0.1",
+  "dependencies": {
+    "opensubtitles": "0.0.1",
+    "request": "~2.34.0",
+    "async": "~0.2.10",
+    "underscore": "~1.6.0",
+    "commander": "~2.1.0",
+    "subtitles-mixer": "0.0.4",
+    "glob": "~3.2.9",
+    "chalk": "~0.4.0"
+  },
+  "devDependencies": {
+    "global-tunnel": "~1.2.0"
+  }
+}
