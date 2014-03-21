@@ -58,8 +58,12 @@ function downloadSubtitles (langs, mix, file, cb) {
 
 function downloadSubtitle (file, lang, cb) {
   subtitlesDownloader(file, lang, function (err, dest) {
-    if (!err) logDownload(dest, lang);
-    cb(err, dest);
+    if (err) {
+      logError(err);
+    } else {
+      logDownload(dest, lang);
+    }
+    cb(null, dest); //continue on error
   });
 }
 
