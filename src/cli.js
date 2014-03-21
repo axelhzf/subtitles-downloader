@@ -69,12 +69,22 @@ function downloadSubtitle (file, lang, cb) {
 
 function watchAndDownload(pattern) {
   console.log(chalk.blue("[watching]") + " - " + pattern);
-  gaze(pattern, function () {
-    this.on('added', function(filepath) {
-      downloadSubtitles(langs, mix, filepath, function () {
 
-      });
-    });
+  gaze(pattern, function () {
+
+    var debouncedFns = [];
+    function debouncedDownload(filepath) {
+      if(!debouncedFns[filepath]) {
+        debouncedFns[filepath] = _.debounce(function () {
+          downloadSubtitles(langs, mix, filepath, _.identity);
+        });
+      }
+      debouncedFns[filepath]();
+    }
+
+    this.on('changed', debouncedDownload);
+    this.on('added', debouncedDownload);
+
   });
 }
 
