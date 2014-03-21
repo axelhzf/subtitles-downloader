@@ -77,7 +77,7 @@ function watchAndDownload(pattern) {
       if(!debouncedFns[filepath]) {
         debouncedFns[filepath] = _.debounce(function () {
           downloadSubtitles(langs, mix, filepath, _.identity);
-        });
+        }, 3000);
       }
       debouncedFns[filepath]();
     }
