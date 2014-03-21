@@ -1,6 +1,7 @@
 {
   "name": "subtitles-downloader",
   "version": "0.0.1",
+  "repository" : "git://github.com/axelhzf/subtitles-downloader.git",
   "dependencies": {
     "opensubtitles": "0.0.1",
     "request": "~2.34.0",
