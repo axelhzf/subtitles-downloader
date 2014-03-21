@@ -26,7 +26,7 @@ module.exports = function subsDownloader (filePath, lang, cb) {
       ];
       searchSubtitles(token, searchParams, function (err, result) {
         if (err) return cb(err);
-        if (result.data === false) return cb("Not found - " + lang +  " - " + filePath);
+        if (result.data === false) return cb("Not found - " + lang + " - " + filePath);
 
         var url = result.data[0].SubDownloadLink;
         var subtitlePath = utils.subtitlePath(filePath, lang);
@@ -41,7 +41,9 @@ function downloadSubtitle (url, subtitlePath, cb) {
   request(url)
     .pipe(zlib.createGunzip())
     .pipe(ostream);
-  cb(null, subtitlePath); //TODO howto call callback on write end?
+  ostream.on("finish", function () {
+    cb(null, subtitlePath);
+  });
 }
 
 function fileInfo (filePath, cb) {
