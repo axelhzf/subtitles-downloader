@@ -8,13 +8,13 @@ Download subtitles from OpenSubtitles.org
 
 ## cli usage
 
-    Usage: cli.js [options]
+    Usage: subtitles-downloader [options]
 
     Options:
 
         -h, --help           output usage information
         -V, --version        output the version number
-        -f, --file <path>    File path
+        -f, --file <path>    File path, or glob
         -l, --langs <langs>  Languages
         -m, --mix            Mix two subtitles into one
 

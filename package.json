@@ -13,5 +13,11 @@
   },
   "devDependencies": {
     "global-tunnel": "~1.2.0"
+  },
+  "license": "MIT",
+  "preferGlobal": true,
+  "main": "src/subtitles-downloader.js",
+  "bin": {
+    "subtitles-downloader": "bin/subtitles-downloader"
   }
 }
