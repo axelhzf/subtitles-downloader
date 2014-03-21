@@ -48,6 +48,9 @@ function downloadSubtitles (langs, mix, file, cb) {
     }
     var mixedPath = utils.subtitlePath(file, langs[0] + "-" + langs[1]);
     mixer(result[0], result[1], mixedPath, function (err) {
+      if (!err) {
+        logMix(mixedPath, [langs[0], langs[1]]);
+      }
       cb(err);
     });
   });
@@ -66,4 +69,9 @@ function logError (err) {
 
 function logDownload (file, lang) {
   console.log(chalk.green("[downloaded]") + " - "+ chalk.blue("[" + lang +"]") +" - " + file);
+}
+
+function logMix (file, langs) {
+  var langStr = langs.join(" - ");
+  console.log(chalk.green("[mixed]") + " - "+ chalk.blue("[" + langStr +"]") +" - " + file);
 }
