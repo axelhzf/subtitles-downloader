@@ -64,7 +64,7 @@ function downloadSubtitle (file, lang, cb) {
 }
 
 function logError (err) {
-  console.err("[error] - " + err);
+  console.error(chalk.red("[error]") + " - " + err);
 }
 
 function logDownload (file, lang) {

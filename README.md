@@ -22,6 +22,7 @@ Examples
 
     subtitles-downloader --f movie.mkv --l spa,eng,ru --mix
     subtitles-downloader --f "movies/*.mkv" --l spa,eng
+    subtitles-downloader -f "*.+(mkv|avi|mp4)"
 
 
 
