@@ -64,7 +64,7 @@ function watchAndDownload (pattern) {
 function downloadSubtitles (langs, mix, file, cb) {
   var downloadFn = _.partial(downloadSubtitle, file);
   async.mapSeries(langs, downloadFn, function (err, result) {
-    var doMix = (mix && langs.length >= 2);
+    var doMix = (mix && langs.length >= 2 && result[0] && result[1]);
     if (!doMix) {
       return cb(err);
     }
