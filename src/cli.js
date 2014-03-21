@@ -70,7 +70,7 @@ function downloadSubtitles (langs, mix, file, cb) {
     }
     var top = {path: result[0], lang: langs[0], encoding: encodingForLang(langs[0])};
     var bottom = {path: result[1], lang: langs[1], encoding: encodingForLang(langs[1])};
-    var mixedPath = utils.subtitlePath(file, top.lang + "-" + bottom.lang, "aas");
+    var mixedPath = utils.subtitlePath(file, top.lang + "-" + bottom.lang, "ass");
     mixer(top, bottom, mixedPath, function (err) {
       if (!err) {
         logMix(mixedPath, [top.lang, bottom.lang]);
