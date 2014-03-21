@@ -7,24 +7,13 @@ var utils = require("./utils");
 var glob = require("glob");
 var chalk = require("chalk");
 
-function validateParameters (object, params) {
-  _.each(params, function (param) {
-    if (_.isUndefined(object[param])) {
-      console.error("Parameter --%s required", param);
-      process.exit(1);
-    }
-  });
-}
-
 var version = require("./../package.json").version;
 program
   .version(version)
-  .option("-f, --file <path>", "File path, or glob")
+  .option("-f, --file <path>", "File path, or glob", "*.+(mkv|avi|mp4)")
   .option("-l, --langs <langs>", "Languages", "eng,spa")
   .option("-m, --mix", "Mix two subtitles into one")
   .parse(process.argv);
-
-validateParameters(program, ["file"]);
 
 var filePath = program.file;
 var langs = program.langs.split(",");
