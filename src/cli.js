@@ -14,7 +14,7 @@ program
   .option("-f, --file <path>", "File path, or glob", "*.+(mkv|avi|mp4)")
   .option("-l, --langs <langs>", "Languages", "eng,spa")
   .option("-m, --mix", "Mix two subtitles into one")
-  .option("-w, --watch", "Watch for file changes to automatically downloads")
+  .option("-w, --watch", "Watch for files changes to automatically downloads")
   .parse(process.argv);
 
 var filePattern = program.file;
