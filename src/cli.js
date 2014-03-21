@@ -6,6 +6,7 @@ var subtitlesDownloader = require("./subtitles-downloader");
 var utils = require("./utils");
 var glob = require("glob");
 var chalk = require("chalk");
+var gaze = require("gaze");
 
 var version = require("./../package.json").version;
 program
@@ -13,20 +14,30 @@ program
   .option("-f, --file <path>", "File path, or glob", "*.+(mkv|avi|mp4)")
   .option("-l, --langs <langs>", "Languages", "eng,spa")
   .option("-m, --mix", "Mix two subtitles into one")
+  .option("-w, --watch", "Watch for file changes to automatically downloads")
   .parse(process.argv);
 
-var filePath = program.file;
+var filePattern = program.file;
 var langs = program.langs.split(",");
 var mix = program.mix;
+var watch = program.watch;
 
-glob(filePath, function (err, files) {
-  if (err) return logError(err);
+if (watch) {
+  watchAndDownload(filePattern);
+} else {
+  downloadSubtitlesFromGlob(filePattern);
+}
 
-  var downloadFn = _.partial(downloadSubtitles, langs, mix);
-  async.mapSeries(files, downloadFn, function (err) {
+function downloadSubtitlesFromGlob(pattern) {
+  glob(pattern, function (err, files) {
     if (err) return logError(err);
+
+    var downloadFn = _.partial(downloadSubtitles, langs, mix);
+    async.mapSeries(files, downloadFn, function (err) {
+      if (err) return logError(err);
+    });
   });
-});
+}
 
 function downloadSubtitles (langs, mix, file, cb) {
   var downloadFn = _.partial(downloadSubtitle, file);
@@ -53,6 +64,17 @@ function downloadSubtitle (file, lang, cb) {
       logDownload(dest, lang);
     }
     cb(null, dest); //continue on error
+  });
+}
+
+function watchAndDownload(pattern) {
+  console.log(chalk.blue("[watching]") + " - " + pattern);
+  gaze(pattern, function () {
+    this.on('added', function(filepath) {
+      downloadSubtitles(langs, mix, filepath, function () {
+
+      });
+    });
   });
 }
 

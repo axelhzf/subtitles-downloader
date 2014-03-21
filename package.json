@@ -1,7 +1,7 @@
 {
   "name": "subtitles-downloader",
-  "version": "0.0.3",
-  "repository" : "git://github.com/axelhzf/subtitles-downloader.git",
+  "version": "0.0.4",
+  "repository": "git://github.com/axelhzf/subtitles-downloader.git",
   "dependencies": {
     "opensubtitles": "0.0.1",
     "request": "~2.34.0",
@@ -10,7 +10,8 @@
     "commander": "~2.1.0",
     "subtitles-mixer": "0.0.4",
     "glob": "~3.2.9",
-    "chalk": "~0.4.0"
+    "chalk": "~0.4.0",
+    "gaze": "~0.5.1"
   },
   "devDependencies": {
     "global-tunnel": "~1.2.0"
