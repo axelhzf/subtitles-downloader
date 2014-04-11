@@ -1,9 +1,7 @@
 var _ = require("underscore");
 var program = require("commander");
 var async = require("async");
-var mixer = require("subtitles-mixer");
 var subtitlesDownloader = require("./subtitles-downloader");
-var utils = require("./utils");
 var glob = require("glob");
 var chalk = require("chalk");
 var gaze = require("gaze");
@@ -32,10 +30,18 @@ function downloadSubtitlesFromGlob (pattern) {
   glob(pattern, function (err, files) {
     if (err) return logError(err);
 
-    var downloadFn = _.partial(downloadSubtitles, langs, mix);
-    async.mapSeries(files, downloadFn, function (err) {
+    var fns = files.map(function (filepath) {
+      var options = {
+        languages: langs,
+        mix: mix,
+        filepath: filepath
+      };
+      return _.partial(subtitlesDownloader, options);
+    });
+    async.series(fns, function (err) {
       if (err) return logError(err);
     });
+
   });
 }
 
@@ -49,7 +55,12 @@ function watchAndDownload (pattern) {
     function debouncedDownload (filepath) {
       if (!debouncedFns[filepath]) {
         debouncedFns[filepath] = _.debounce(function () {
-          downloadSubtitles(langs, mix, filepath, _.identity);
+          var options = {
+            languages: langs,
+            mix: mix,
+            filepath: filepath
+          };
+          subtitlesDownloader(options, _.identity);
         }, 3000);
       }
       debouncedFns[filepath]();
@@ -61,53 +72,6 @@ function watchAndDownload (pattern) {
   });
 }
 
-function downloadSubtitles (langs, mix, file, cb) {
-  var downloadFn = _.partial(downloadSubtitle, file);
-  async.mapSeries(langs, downloadFn, function (err, result) {
-    var doMix = (mix && langs.length >= 2 && result[0] && result[1]);
-    if (!doMix) {
-      return cb(err);
-    }
-    var top = {path: result[0], lang: langs[0], encoding: encodingForLang(langs[0])};
-    var bottom = {path: result[1], lang: langs[1], encoding: encodingForLang(langs[1])};
-    var mixedPath = utils.subtitlePath(file, top.lang + "-" + bottom.lang, "ass");
-    mixer(top, bottom, mixedPath, function (err) {
-      if (!err) {
-        logMix(mixedPath, [top.lang, bottom.lang]);
-      }
-      cb(err);
-    });
-  });
-}
-
-function downloadSubtitle (file, lang, cb) {
-  subtitlesDownloader(file, lang, function (err, dest) {
-    if (err) {
-      logError(err);
-    } else {
-      logDownload(dest, lang);
-    }
-    cb(null, dest); //continue on error
-  });
-}
-
-function encodingForLang (lang) {
-  if (lang === "spa") {
-    return "windows-1252";
-  } else if (lang === "eng") {
-    return "ascii";
-  }
-}
-
 function logError (err) {
   console.error(chalk.red("[error]") + " - " + err);
-}
-
-function logDownload (file, lang) {
-  console.log(chalk.green("[downloaded]") + " - " + chalk.blue("[" + lang + "]") + " - " + file);
-}
-
-function logMix (file, langs) {
-  var langStr = langs.join(" - ");
-  console.log(chalk.green("[mixed]") + " - " + chalk.blue("[" + langStr + "]") + " - " + file);
 }
