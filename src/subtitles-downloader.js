@@ -42,8 +42,11 @@ function downloadSubtitles (options, cb) {
 
 function downloadSubtitleIgnoreErrors(filepath, lang, cb) {
   downloadSubtitle(filepath, lang, function (err, dest) {
-    if (err) logError(err);
-    logDownload(filepath, lang);
+    if (err) {
+      logError(err);
+    } else {
+      logDownload(filepath, lang);
+    }
     cb(null, dest); //ignore error
   })
 }
