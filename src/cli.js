@@ -36,7 +36,7 @@ function downloadSubtitlesFromGlob (pattern) {
         mix: mix,
         filepath: filepath
       };
-      return _.partial(subtitlesDownloader, options);
+      return _.partial(subtitlesDownloader.downloadSubtitles, options);
     });
     async.series(fns, function (err) {
       if (err) return logError(err);
