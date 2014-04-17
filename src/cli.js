@@ -60,7 +60,7 @@ function watchAndDownload (pattern) {
             mix: mix,
             filepath: filepath
           };
-          subtitlesDownloader(options, _.identity);
+          subtitlesDownloader.downloadSubtitles(options, _.identity);
         }, 3000);
       }
       debouncedFns[filepath]();

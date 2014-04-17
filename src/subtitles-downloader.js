@@ -125,4 +125,5 @@ function logMix (file, langs) {
   console.log(chalk.green("[mixed]") + " - " + chalk.blue("[" + langStr + "]") + " - " + file);
 }
 
-module.exports = downloadSubtitles;
+exports.downloadSubtitles = downloadSubtitles;
+exports.downloadSubtitle = downloadSubtitle;
