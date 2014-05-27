@@ -1,3 +1,4 @@
+var path = require("path");
 var zlib = require("zlib");
 var request = require("request");
 var fs = require("fs");
@@ -11,6 +12,13 @@ var utils = require("./utils");
 var os = new OS();
 var userAgent = "OpenSubtitlesPlayer v4.7";
 
+module.exports = {
+  downloadSubtitles: downloadSubtitles,
+  downloadSubtitle: downloadSubtitle,
+  os: os
+};
+
+
 /**
  * @param options.filepath
  * @param options.languages
@@ -20,7 +28,7 @@ function downloadSubtitles (options, cb) {
   var langs = options.languages;
   var mix = options.mix || false;
   var filepath = options.filepath;
-  
+
   var downloadFn = _.partial(downloadSubtitleIgnoreErrors, filepath);
   async.mapSeries(langs, downloadFn, function (err, result) {
     var doMix = (mix && langs.length >= 2 && result[0] && result[1]);
@@ -36,11 +44,11 @@ function downloadSubtitles (options, cb) {
       }
       cb(err);
     });
-    
+
   });
 }
 
-function downloadSubtitleIgnoreErrors(filepath, lang, cb) {
+function downloadSubtitleIgnoreErrors (filepath, lang, cb) {
   downloadSubtitle(filepath, lang, function (err, dest) {
     if (err) {
       logError(err);
@@ -52,31 +60,18 @@ function downloadSubtitleIgnoreErrors(filepath, lang, cb) {
 }
 
 function downloadSubtitle (filePath, lang, cb) {
-  fileInfo(filePath, function (err, fileInfo) {
+  searchParams(filePath, function (err, params) {
     if (err) return cb(err);
-
+    params.sublanguageid = lang;
     login(function (err, res) {
       if (err) return cb(err);
-
       var token = res.token;
-      var searchParams = [
-        {
-          moviehash: fileInfo.hash,
-          moviebytesize: fileInfo.stats.size,
-          sublanguageid: lang
-        }
-      ];
-      searchSubtitles(token, searchParams, function (err, result) {
-        if (err) return cb(err);
-        if (result.data === false) return cb("Not found - " + lang + " - " + filePath);
-        if (_.isUndefined(result.data)) return cb("Not found - " + lang + " - " + filePath);
-
-        var url = result.data[0].SubDownloadLink;
+      searchSubtitles(token, [params], function (err, result) {
+        var url = result[0].SubDownloadLink;
         var subtitlePath = utils.subtitlePath(filePath, lang);
         doRequest(url, subtitlePath, cb);
       });
     });
-
   });
 }
 
@@ -90,10 +85,26 @@ function doRequest (url, subtitlePath, cb) {
   });
 }
 
-function fileInfo (filePath, cb) {
-  var computeHash = _.bind(os.computeHash, os, filePath);
-  var stats = _.bind(fs.stat, fs, filePath);
-  async.parallel({hash: computeHash, stats: stats}, cb);
+function searchParams (filePath, cb) {
+  fs.stat(filePath, function (err, stat) {
+    if (err) {
+      if (err.code !== "ENOENT") return cb(err);
+      var tag = path.basename(filePath);
+      var searchParams = {
+        tag: tag
+      };
+      cb(null, searchParams);
+    } else {
+      os.computeHash(filePath, function (err, hash) {
+        if (err) return cb(err);
+        var searchParams = {
+          moviehash: hash,
+          moviebytesize: stat.size
+        };
+        cb(null, searchParams);
+      });
+    }
+  });
 }
 
 function login (cb) {
@@ -101,7 +112,11 @@ function login (cb) {
 }
 
 function searchSubtitles (token, params, cb) {
-  os.api.SearchSubtitles(cb, token, params);
+  os.api.SearchSubtitles(function (err, result) {
+    if (err) return cb(err);
+    if (_.isUndefined(result.data) || result.data === false) return cb(new Error({code: "NOTFOUND"}));
+    cb(null, result.data);
+  }, token, params);
 }
 
 function encodingForLang (lang) {
@@ -124,6 +139,3 @@ function logMix (file, langs) {
   var langStr = langs.join(" - ");
   console.log(chalk.green("[mixed]") + " - " + chalk.blue("[" + langStr + "]") + " - " + file);
 }
-
-exports.downloadSubtitles = downloadSubtitles;
-exports.downloadSubtitle = downloadSubtitle;
