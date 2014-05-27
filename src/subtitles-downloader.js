@@ -69,6 +69,9 @@ function downloadSubtitle (filePath, lang, cb) {
       if (err) return cb(err);
       var token = res.token;
       searchSubtitles(token, [params], function (err, result) {
+        if (err) return cb(err);
+        if  (result.length === 0) return cb();
+
         var url = result[0].SubDownloadLink;
         var subtitlePath = utils.subtitlePath(filePath, lang);
         doRequest(url, subtitlePath, cb);
