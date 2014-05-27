@@ -33,7 +33,7 @@ function downloadSubtitles (options, cb) {
   async.mapSeries(langs, downloadFn, function (err, result) {
     var doMix = (mix && langs.length >= 2 && result[0] && result[1]);
     if (!doMix) {
-      return cb(err);
+      return cb(err, result);
     }
     var top = {path: result[0], lang: langs[0], encoding: encodingForLang(langs[0])};
     var bottom = {path: result[1], lang: langs[1], encoding: encodingForLang(langs[1])};
@@ -41,8 +41,10 @@ function downloadSubtitles (options, cb) {
     mixer(top, bottom, mixedPath, function (err) {
       if (!err) {
         logMix(mixedPath, [top.lang, bottom.lang]);
+        return cb(err);
       }
-      cb(err);
+      result.push(mixedPath);
+      cb(err, result);
     });
 
   });

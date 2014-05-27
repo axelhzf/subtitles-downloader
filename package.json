@@ -1,6 +1,6 @@
 {
   "name": "subtitles-downloader",
-  "version": "0.2.0",
+  "version": "0.2.1",
   "repository": "git://github.com/axelhzf/subtitles-downloader.git",
   "dependencies": {
     "async": "~0.2.10",
@@ -30,6 +30,6 @@
     "subtitles-downloader": "./bin/subtitles-downloader"
   },
   "scripts": {
-    "test": "node_modules/.bin/mocha test --harmony"
+    "test": "node_modules/.bin/mocha test --harmony --timeout 5000"
   }
 }
