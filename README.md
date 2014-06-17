@@ -28,5 +28,5 @@ Examples
 
 ## Debug
 
-   DEBUG=* subtitles-downloader -f movie.mkv -l spa,eng
-   DEBUG=subtitles-downloader subtitles-downloader -f movie.mkv -l spa,eng
+    DEBUG=* subtitles-downloader -f movie.mkv -l spa,eng
+    DEBUG=subtitles-downloader subtitles-downloader -f movie.mkv -l spa,eng
