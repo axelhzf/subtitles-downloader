@@ -11,17 +11,19 @@ var _ = require("underscore");
 
 var tmpDir = thunkify(tmp.dir);
 
-["downloadSubtitle", "downloadSubtitles"].forEach(function (fun) {
-  subtitlesDownloader[fun] = thunkify(subtitlesDownloader[fun]);
-});
-
 describe("subtitles-downloader", function () {
   var testDir;
+  var sandbox;
 
   beforeEach(function (done) {
+    sandbox = sinon.sandbox.create();
     co(function* () {
       testDir = yield tmpDir();
     })(done);
+  });
+
+  afterEach(function () {
+    sandbox.restore();
   });
 
   describe("downloadSubtitle", function () {
@@ -37,7 +39,6 @@ describe("subtitles-downloader", function () {
         var fileExists = yield cfs.exists(destinationFile);
         expect(fileExists).to.be.true;
 
-        restoreStubs();
       })(done);
     });
 
@@ -59,28 +60,52 @@ describe("subtitles-downloader", function () {
         var filePath = path.join(testDir, "Silicon.Valley.S01E01.HDTV.x264-KILLERS.mp4");
         var result = yield subtitlesDownloader.downloadSubtitles({filepath: filePath, languages: ["spa", "eng"]});
         var expectedResult = [
-          path.join(testDir, "Silicon.Valley.S01E01.HDTV.x264-KILLERS.spa.srt"),
-          path.join(testDir, "Silicon.Valley.S01E01.HDTV.x264-KILLERS.eng.srt")
+          {lang: "spa", path: path.join(testDir, "Silicon.Valley.S01E01.HDTV.x264-KILLERS.spa.srt")},
+          {lang: "eng", path: path.join(testDir, "Silicon.Valley.S01E01.HDTV.x264-KILLERS.eng.srt")}
         ];
         expect(result).to.eql(expectedResult);
-        var fileExists = yield expectedResult.map(cfs.exists);
+        var fileExists = yield _.pluck(expectedResult, "path").map(cfs.exists);
+        expect(_.every(fileExists)).to.be.true;
+      })(done);
+    });
+
+    it("should mix subtitles", function (done) {
+      co(function* () {
+        var filePath = path.join(testDir, "Silicon.Valley.S01E01.HDTV.x264-KILLERS.mp4");
+        var result = yield subtitlesDownloader.downloadSubtitles({filepath: filePath, languages: ["spa", "eng"], mix: true});
+        var expectedResult = [
+          {lang: "spa", path: path.join(testDir, "Silicon.Valley.S01E01.HDTV.x264-KILLERS.spa.srt")},
+          {lang: "eng", path: path.join(testDir, "Silicon.Valley.S01E01.HDTV.x264-KILLERS.eng.srt")},
+          {lang: "spa-eng", path: path.join(testDir, "Silicon.Valley.S01E01.HDTV.x264-KILLERS.spa-eng.aas")}
+        ];
+
+        expect(result).to.eql(expectedResult);
+        var fileExists = yield _.pluck(expectedResult, "path").map(cfs.exists);
         expect(_.every(fileExists)).to.be.true;
       })(done);
     });
   });
 
   function prepareStubs (filePath, size, hash) {
-    sinon.stub(fs, "stat", function (_filePath, cb) {
+    sandbox.stub(cfs, "exists", function () {
+      return function (cb) {
+        return cb(null, true);
+      }
+    });
+    sandbox.stub(fs, "stat", function (_filePath, cb) {
       cb(null, {size: size});
     });
-    sinon.stub(subtitlesDownloader.os, "computeHash", function (_filePath, cb) {
-      expect(filePath).to.equal(_filePath);
-      cb(null, hash);
+    sandbox.stub(cfs, "stat", function (_filePath) {
+      return function (cb) {
+        cb(null, {size: size});
+      }
     });
-  }
-  function restoreStubs() {
-    fs.stat.restore();
-    subtitlesDownloader.os.computeHash.restore();
+    sandbox.stub(subtitlesDownloader.os, "computeHash", function (_filePath) {
+      return function (cb) {
+        expect(filePath).to.equal(_filePath);
+        cb(null, hash);
+      }
+    });
   }
 
 });

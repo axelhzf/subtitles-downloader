@@ -1,10 +1,12 @@
 var _ = require("underscore");
 var program = require("commander");
-var async = require("async");
-var subtitlesDownloader = require("./subtitles-downloader");
-var glob = require("glob");
+var thunkify = require("thunkify");
+var glob = thunkify(require("glob"));
 var chalk = require("chalk");
-var gaze = require("gaze");
+var co = require("co");
+var subtitlesDownloader = require("./subtitles-downloader");
+
+var path = require("path");
 
 var version = require("./../package.json").version;
 program
@@ -18,60 +20,43 @@ program
 var filePattern = program.file;
 var langs = program.langs.split(",");
 var mix = program.mix;
-var watch = program.watch;
 
-if (watch) {
-  watchAndDownload(filePattern);
-} else {
-  downloadSubtitlesFromGlob(filePattern);
-}
-
-function downloadSubtitlesFromGlob (pattern) {
-  glob(pattern, function (err, files) {
-    if (err) return logError(err);
-
-    var fns = files.map(function (filepath) {
+co(function* () {
+  try {
+    var files = yield glob(filePattern);
+    if (files.length === 0) {
+      error("No matching files");
+      return;
+    }
+    for(var file of files.values()) {
       var options = {
         languages: langs,
         mix: mix,
-        filepath: filepath
+        filepath: file
       };
-      return _.partial(subtitlesDownloader.downloadSubtitles, options);
-    });
-    async.series(fns, function (err) {
-      if (err) return logError(err);
-    });
-
-  });
-}
-
-function watchAndDownload (pattern) {
-  console.log(chalk.blue("[watching]") + " - " + pattern);
-
-  gaze(pattern, function () {
-
-    var debouncedFns = [];
-
-    function debouncedDownload (filepath) {
-      if (!debouncedFns[filepath]) {
-        debouncedFns[filepath] = _.debounce(function () {
-          var options = {
-            languages: langs,
-            mix: mix,
-            filepath: filepath
-          };
-          subtitlesDownloader.downloadSubtitles(options, _.identity);
-        }, 3000);
+      var results = yield subtitlesDownloader.downloadSubtitles(options);
+      for(var result of results.values()) {
+        var baseFile = path.basename(file);
+        if (result.path) {
+          info("Downloaded - " + baseFile + " - " + result.lang);
+        } else {
+          warn("Not found - " + baseFile + " - " + result.lang)
+        }
       }
-      debouncedFns[filepath]();
     }
+  } catch(err) {
+    error(err);
+  }
+})();
 
-    this.on('changed', debouncedDownload);
-    this.on('added', debouncedDownload);
-
-  });
+function error(msg) {
+  console.error(chalk.red("[error]") + " - " + msg);
 }
 
-function logError (err) {
-  console.error(chalk.red("[error]") + " - " + err);
+function warn(msg) {
+  console.error(chalk.yellow("[warn]") + " - " + msg);
+}
+
+function info(msg) {
+  console.error(chalk.green("[info]") + " - " + msg);
 }
