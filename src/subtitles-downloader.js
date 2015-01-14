@@ -1,21 +1,21 @@
 var path = require("path");
-var zlib = require("zlib");
-var request = require("request");
-var fs = require("fs");
+var fs = require("mz/fs");
 var _ = require("underscore");
 var OS = require("opensubtitles");
-var thunkify = require("thunkify");
-var mixer = thunkify(require("subtitles-mixer"));
-var utils = require("./utils");
-var cfs = require("co-fs");
+var Promise = require("bluebird");
+var mixer = Promise.promisify(require("subtitles-mixer"));
+var co = require("co");
 var parallel = require("co-parallel");
 
 var debug = require("debug")("subtitles-downloader");
 
+var utils = require("./utils");
+var download = require("./download");
+
 var os = new OS();
 var userAgent = "OpenSubtitlesPlayer v4.7";
 
-os.computeHash = thunkify(os.computeHash.bind(os));
+os.computeHash = Promise.promisify(os.computeHash.bind(os));
 
 
 module.exports = {
@@ -30,65 +30,69 @@ module.exports = {
  * @param options.languages
  * @param options.mix
  */
-function* downloadSubtitles (options) {
-  var langs = options.languages;
-  var mix = options.mix || false;
-  var filepath = options.filepath;
+function downloadSubtitles (options) {
+  return co(function* () {
+    var langs = options.languages;
+    var mix = options.mix || false;
+    var filepath = options.filepath;
 
-  var reqs = langs.map(function (lang) {
-    return downloadSubtitle(filepath, lang);
+    var reqs = langs.map(function (lang) {
+      return downloadSubtitle(filepath, lang);
+    });
+    var subtitles = yield parallel(reqs);
+    subtitles = _.map(subtitles, function (subtitle, index) {
+      return {path: subtitle, lang: langs[index]}
+    });
+
+    var existingSubtitles = _.filter(subtitles, function (subtitle) {
+      return subtitle.path !== undefined;
+    });
+
+    var canMix = mix && existingSubtitles.length >= 2;
+    if (canMix) {
+      var top = _.extend({}, existingSubtitles[0]);
+      var bottom = _.extend({}, existingSubtitles[1]);
+      top.encoding = encodingForLang(top.lang);
+      bottom.encoding = encodingForLang(bottom.lang);
+
+      var mixedLang = top.lang + "-" + bottom.lang;
+      var mixedPath = utils.subtitlePath(filepath, mixedLang, "aas");
+      yield mixer(top, bottom, mixedPath);
+
+      subtitles.push({lang: mixedLang, path: mixedPath});
+    }
+
+    return subtitles;
   });
-  var subtitles = yield parallel(reqs);
-  subtitles = _.map(subtitles, function (subtitle, index) {
-    return {path: subtitle, lang: langs[index]}
-  });
-
-  var existingSubtitles = _.filter(subtitles, function (subtitle) {
-    return subtitle.path !== undefined;
-  });
-
-  var canMix = mix && existingSubtitles.length >= 2;
-  if (canMix) {
-    var top = _.extend({}, existingSubtitles[0]);
-    var bottom = _.extend({}, existingSubtitles[1]);
-    top.encoding = encodingForLang(top.lang);
-    bottom.encoding = encodingForLang(bottom.lang);
-
-    var mixedLang = top.lang + "-" + bottom.lang;
-    var mixedPath = utils.subtitlePath(filepath, mixedLang, "aas");
-    yield mixer(top, bottom, mixedPath);
-
-    subtitles.push({lang: mixedLang, path: mixedPath});
-  }
-
-  return subtitles;
 }
 
-function* downloadSubtitle (filePath, lang) {
-  var subtitleUrl;
-  var searchParams;
-  var exists = yield cfs.exists(filePath);
+function downloadSubtitle (filePath, lang) {
+  return co(function* () {
+    var subtitleUrl;
+    var searchParams;
+    var exists = yield fs.exists(filePath);
 
-  if (exists) { // using hash
-    searchParams = yield searchParamsByHash(filePath, lang);
-    subtitleUrl = yield searchSubtitleUrlBySearchParams(searchParams);
-  }
+    if (exists) { // using hash
+      searchParams = yield searchParamsByHash(filePath, lang);
+      subtitleUrl = yield searchSubtitleUrlBySearchParams(searchParams);
+    }
 
-  if (!subtitleUrl) { // using filename
-    searchParams = yield searchParamsByFileName(filePath, lang);
-    subtitleUrl = yield searchSubtitleUrlBySearchParams(searchParams);
-  }
+    if (!subtitleUrl) { // using filename
+      searchParams = yield searchParamsByFileName(filePath, lang);
+      subtitleUrl = yield searchSubtitleUrlBySearchParams(searchParams);
+    }
 
-  if (subtitleUrl) {
-    var subtitlePath = utils.subtitlePath(filePath, lang);
-    yield downloadSubtitleByUrl(subtitleUrl, subtitlePath);
-    return subtitlePath;
-  }
+    if (subtitleUrl) {
+      var subtitlePath = utils.subtitlePath(filePath, lang);
+      yield download.downloadAndDecompress(subtitleUrl, subtitlePath);
+      return subtitlePath;
+    }
+  });
 }
 
 function* searchParamsByHash(filePath, lang) {
     var hash = yield os.computeHash(filePath);
-    var stat = yield cfs.stat(filePath);
+    var stat = yield fs.stat(filePath);
     var searchParams = {
       moviehash: hash,
       moviebytesize: stat.size,
@@ -128,19 +132,6 @@ function searchFirstSubtitleUrl (token, searchParams) {
         cb(null, url);
       }
     }, token, [searchParams]);
-  }
-}
-
-function downloadSubtitleByUrl (url, subtitlePath) {
-  return function (cb) {
-    debug("Downloading %s", url);
-    var ostream = fs.createWriteStream(subtitlePath);
-    request(url).pipe(zlib.createGunzip()).pipe(ostream);
-
-    ostream.on("finish", function () {
-      debug("Download complete %s", path.basename(subtitlePath));
-      cb(null);
-    });
   }
 }
 

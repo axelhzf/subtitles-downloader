@@ -1,7 +1,7 @@
 var _ = require("underscore");
 var program = require("commander");
-var thunkify = require("thunkify");
-var glob = thunkify(require("glob"));
+var Promise = require("bluebird");
+var glob = Promise.promisify(require("glob"));
 var chalk = require("chalk");
 var co = require("co");
 var subtitlesDownloader = require("./subtitles-downloader");
@@ -14,7 +14,6 @@ program
   .option("-f, --file <path>", "File path, or glob", "*.+(mkv|avi|mp4)")
   .option("-l, --langs <langs>", "Languages", "eng,spa")
   .option("-m, --mix", "Mix two subtitles into one")
-  .option("-w, --watch", "Watch for files changes to automatically downloads")
   .parse(process.argv);
 
 var filePattern = program.file;
@@ -28,14 +27,14 @@ co(function* () {
       error("No matching files");
       return;
     }
-    for(var file of files.values()) {
+    for (var file of files.values()) {
       var options = {
         languages: langs,
         mix: mix,
         filepath: file
       };
       var results = yield subtitlesDownloader.downloadSubtitles(options);
-      for(var result of results.values()) {
+      for (var result of results.values()) {
         var baseFile = path.basename(file);
         if (result.path) {
           info("Downloaded - " + baseFile + " - " + result.lang);
@@ -44,7 +43,7 @@ co(function* () {
         }
       }
     }
-  } catch(err) {
+  } catch (err) {
     error(err);
   }
 })();

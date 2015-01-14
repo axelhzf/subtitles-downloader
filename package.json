@@ -3,22 +3,24 @@
   "version": "1.0.0",
   "repository": "git://github.com/axelhzf/subtitles-downloader.git",
   "dependencies": {
+    "bluebird": "^2.6.3",
     "chalk": "~0.4.0",
     "co": "^3.0.6",
-    "co-fs": "^1.2.0",
     "co-parallel": "^1.0.0",
     "commander": "~2.1.0",
     "debug": "^1.0.2",
     "glob": "~3.2.9",
+    "mz": "^1.2.1",
     "opensubtitles": "0.0.1",
     "request": "~2.34.0",
     "subtitles-mixer": "0.0.6",
-    "thunkify": "^2.1.2",
     "underscore": "~1.6.0"
   },
   "devDependencies": {
     "chai": "^1.9.1",
+    "co-mocha": "^1.1.0",
     "mocha": "^1.19.0",
+    "nock": "^0.56.0",
     "sinon": "^1.10.0",
     "tmp": "0.0.23"
   },
@@ -29,6 +31,6 @@
     "subtitles-downloader": "./bin/subtitles-downloader"
   },
   "scripts": {
-    "test": "node_modules/.bin/mocha test --harmony --timeout 5000"
+    "test": "node_modules/.bin/mocha test/**.spec.js --reporter spec --harmony --timeout 5000"
   }
 }
