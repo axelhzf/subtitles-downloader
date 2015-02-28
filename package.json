@@ -1,6 +1,6 @@
 {
   "name": "subtitles-downloader",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "repository": "git://github.com/axelhzf/subtitles-downloader.git",
   "dependencies": {
     "bluebird": "^2.6.3",
@@ -11,7 +11,7 @@
     "debug": "^1.0.2",
     "glob": "~3.2.9",
     "mz": "^1.2.1",
-    "opensubtitles": "0.0.1",
+    "opensubtitles": "git://github.com/axelhzf/node-opensubtitles-api#computeHash-memoryleak",
     "request": "~2.34.0",
     "subtitles-mixer": "0.0.6",
     "underscore": "~1.6.0"
