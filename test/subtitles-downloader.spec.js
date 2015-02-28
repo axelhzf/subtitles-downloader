@@ -70,6 +70,20 @@ describe("subtitles-downloader", function () {
       expect(fileExists).to.be.true;
     });
 
+    it("should throw an error an error if the subtitle doesn't exists", function* () {
+      var filePath = path.join(testDir, filename);
+      var lang = "spa";
+
+      stubFindByTag();
+
+      yield subtitlesDownloader.downloadSubtitle(filePath, lang);
+      sandbox.restore();
+
+      var fileExists = yield fs.exists(path.join(testDir, "Silicon.Valley.S01E01.HDTV.x264-KILLERS.spa.srt"));
+      expect(fileExists).to.be.true;
+
+    })
+
   });
 
   describe("downloadSubtitles", function () {
