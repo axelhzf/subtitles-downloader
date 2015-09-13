@@ -27,14 +27,14 @@ co(function* () {
       error("No matching files");
       return;
     }
-    for (var file of files.values()) {
+    for (var file of unwrapFiles(files)) {
       var options = {
         languages: langs,
         mix: mix,
         filepath: file
       };
       var results = yield subtitlesDownloader.downloadSubtitles(options);
-      for (var result of results.values()) {
+      for (var result of unwrapFiles(results)) {
         var baseFile = path.basename(file);
         if (result.path) {
           info("Downloaded - " + baseFile + " - " + result.lang);
@@ -47,6 +47,14 @@ co(function* () {
     error(err);
   }
 })();
+
+function unwrapFiles(files) {
+  if (typeof(files.values) == 'function') {
+    return files.values();
+  }
+  
+  return files;
+}
 
 function error(msg) {
   console.error(chalk.red("[error]") + " - " + msg);
