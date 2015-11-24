@@ -56,7 +56,7 @@ function downloadSubtitles (options) {
       bottom.encoding = encodingForLang(bottom.lang);
 
       var mixedLang = top.lang + "-" + bottom.lang;
-      var mixedPath = utils.subtitlePath(filepath, mixedLang, "aas");
+      var mixedPath = utils.subtitlePath(filepath, mixedLang, "ass");
       yield mixer(top, bottom, mixedPath);
 
       subtitles.push({lang: mixedLang, path: mixedPath});
