@@ -1,11 +1,11 @@
 {
   "name": "subtitles-downloader",
-  "version": "1.0.3",
+  "version": "1.0.4",
   "repository": "git://github.com/axelhzf/subtitles-downloader.git",
   "dependencies": {
     "bluebird": "^2.6.3",
     "chalk": "~0.4.0",
-    "co": "^3.0.6",
+    "co": "^4.6.0",
     "co-parallel": "^1.0.0",
     "commander": "~2.1.0",
     "debug": "^1.0.2",

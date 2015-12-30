@@ -118,7 +118,7 @@ describe("subtitles-downloader", function () {
       var expectedResult = [
         {lang: "spa", path: path.join(testDir, "Silicon.Valley.S01E01.HDTV.x264-KILLERS.spa.srt")},
         {lang: "eng", path: path.join(testDir, "Silicon.Valley.S01E01.HDTV.x264-KILLERS.eng.srt")},
-        {lang: "spa-eng", path: path.join(testDir, "Silicon.Valley.S01E01.HDTV.x264-KILLERS.spa-eng.aas")}
+        {lang: "spa-eng", path: path.join(testDir, "Silicon.Valley.S01E01.HDTV.x264-KILLERS.spa-eng.ass")}
       ];
       sandbox.restore();
 
