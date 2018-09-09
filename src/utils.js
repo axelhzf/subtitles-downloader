@@ -6,3 +6,7 @@ exports.subtitlePath = function(filePath, lang, subtitleExtension) {
   var base = filePath.substring(0, filePath.length - extension.length);
   return base + "." + lang + "." + subtitleExtension;
 };
+
+exports.escapeGlobCharacters = function (pattern) {
+  return pattern.replace(/[-[\]{}()*+?.,\\^$|#\s]/g , '\\$&');
+};

@@ -9,18 +9,27 @@ var subtitlesDownloader = require("./subtitles-downloader");
 var path = require("path");
 
 var version = require("./../package.json").version;
+var utils = require("./utils");
+
 program
   .version(version)
   .option("-f, --file <path>", "File path, or glob", "*.+(mkv|avi|mp4)")
   .option("-l, --langs <langs>", "Languages", "eng,spa")
   .option("-m, --mix", "Mix two subtitles into one")
+  .option("-s, --special", "Use special characters for advanced file matching")
   .parse(process.argv);
 
 var filePattern = program.file;
 var langs = program.langs.split(",");
 var mix = program.mix;
+var special = program.special || false;
 
 co(function* () {
+  // if there is a provided pattern contains glob special characters, escape them
+  if ((!special) && (filePattern !== '*.+(mkv|avi|mp4)')) {
+    filePattern = utils.escapeGlobCharacters(filePattern);
+  }
+
   var files = yield glob(filePattern);
   if (files.length === 0) {
     error("No matching files");
