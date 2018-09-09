@@ -37,7 +37,7 @@ function downloadSubtitles (options) {
     var filepath = options.filepath;
 
     var reqs = langs.map(function (lang) {
-      return downloadSubtitle(filepath, lang);
+      return downloadSubtitle(filepath, lang, langs.length > 1);
     });
     var subtitles = yield parallel(reqs);
     subtitles = _.map(subtitles, function (subtitle, index) {
@@ -66,7 +66,7 @@ function downloadSubtitles (options) {
   });
 }
 
-function downloadSubtitle (filePath, lang) {
+function downloadSubtitle (filePath, lang, addLangToFileName) {
   return co(function* () {
     var subtitleUrl;
     var searchParams;
@@ -83,7 +83,7 @@ function downloadSubtitle (filePath, lang) {
     }
 
     if (subtitleUrl) {
-      var subtitlePath = utils.subtitlePath(filePath, lang);
+      var subtitlePath = utils.subtitlePath(filePath, lang, null, addLangToFileName);
       yield download.downloadAndDecompress(subtitleUrl, subtitlePath);
       return subtitlePath;
     }
