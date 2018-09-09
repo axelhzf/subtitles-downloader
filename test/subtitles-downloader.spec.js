@@ -49,7 +49,7 @@ describe("subtitles-downloader", function () {
       stubFindByHash();
 
       var destinationFile = yield subtitlesDownloader.downloadSubtitle(filePath, "spa");
-      var expectedDestination = path.join(testDir, "Silicon.Valley.S01E01.HDTV.x264-KILLERS.spa.srt");
+      var expectedDestination = path.join(testDir, "Silicon.Valley.S01E01.HDTV.x264-KILLERS.srt");
       expect(destinationFile).equals(expectedDestination);
       sandbox.restore();
 
@@ -66,7 +66,7 @@ describe("subtitles-downloader", function () {
       yield subtitlesDownloader.downloadSubtitle(filePath, lang);
       sandbox.restore();
 
-      var fileExists = yield fs.exists(path.join(testDir, "Silicon.Valley.S01E01.HDTV.x264-KILLERS.spa.srt"));
+      var fileExists = yield fs.exists(path.join(testDir, "Silicon.Valley.S01E01.HDTV.x264-KILLERS.srt"));
       expect(fileExists).to.be.true;
     });
 
@@ -79,7 +79,7 @@ describe("subtitles-downloader", function () {
       yield subtitlesDownloader.downloadSubtitle(filePath, lang);
       sandbox.restore();
 
-      var fileExists = yield fs.exists(path.join(testDir, "Silicon.Valley.S01E01.HDTV.x264-KILLERS.spa.srt"));
+      var fileExists = yield fs.exists(path.join(testDir, "Silicon.Valley.S01E01.HDTV.x264-KILLERS.srt"));
       expect(fileExists).to.be.true;
 
     })
@@ -118,7 +118,7 @@ describe("subtitles-downloader", function () {
       var expectedResult = [
         {lang: "spa", path: path.join(testDir, "Silicon.Valley.S01E01.HDTV.x264-KILLERS.spa.srt")},
         {lang: "eng", path: path.join(testDir, "Silicon.Valley.S01E01.HDTV.x264-KILLERS.eng.srt")},
-        {lang: "spa-eng", path: path.join(testDir, "Silicon.Valley.S01E01.HDTV.x264-KILLERS.spa-eng.ass")}
+        {lang: "spa-eng", path: path.join(testDir, "Silicon.Valley.S01E01.HDTV.x264-KILLERS.ass")}
       ];
       sandbox.restore();
 

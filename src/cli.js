@@ -14,7 +14,7 @@ var utils = require("./utils");
 program
   .version(version)
   .option("-f, --file <path>", "File path, or glob", "*.+(mkv|avi|mp4)")
-  .option("-l, --langs <langs>", "Languages", "eng,spa")
+  .option("-l, --langs <langs>", "Languages (default English)", "eng")
   .option("-m, --mix", "Mix two subtitles into one")
   .option("-s, --special", "Use special characters for advanced file matching")
   .parse(process.argv);
