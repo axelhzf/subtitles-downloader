@@ -1,6 +1,6 @@
 {
   "name": "subtitles-downloader",
-  "version": "1.5.0",
+  "version": "1.5.1",
   "repository": "git://github.com/axelhzf/subtitles-downloader.git",
   "dependencies": {
     "chalk": "^2.4.2",
