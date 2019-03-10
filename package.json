@@ -1,6 +1,6 @@
 {
   "name": "subtitles-downloader",
-  "version": "2.0.0",
+  "version": "1.5.0",
   "repository": "git://github.com/axelhzf/subtitles-downloader.git",
   "dependencies": {
     "chalk": "^2.4.2",
@@ -34,6 +34,9 @@
   "bin": {
     "subtitles-downloader": "./dist/cli.js"
   },
+  "files": [
+    "dist"
+  ],
   "scripts": {
     "test": "jest",
     "test:watch": "jest --watch --notify",
